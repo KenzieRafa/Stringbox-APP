@@ -169,5 +169,5 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 ---
 
 ## 📧 Author
-Kenzie Raffa Ardhana (18223127)
-Rasyid Rizky S N (18223114)
+- Kenzie Raffa Ardhana (18223127)
+- Rasyid Rizky S N (18223114)
