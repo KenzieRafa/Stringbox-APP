@@ -1,173 +1,456 @@
-# APP-Stringbox
+# StringBox App
 
-APP-Stringbox adalah aplikasi Android yang dibangun menggunakan **Jetpack Compose** dan menampilkan splash screen dengan material design yang modern. Aplikasi ini berfungsi sebagai demonstrasi implementasi splash screen dan Jetpack Compose di Android.
+StringBox adalah aplikasi mobile cross-platform yang dibangun dengan Expo dan React Native. Aplikasi ini mendukung iOS, Android, dan Web.
 
-## 🚀 Cara Menjalankan APP
+## Daftar Isi
 
-### Prerequisites
-Sebelum menjalankan aplikasi, pastikan Anda sudah menginstal:
-- **Android Studio** (versi terbaru)
-- **Java Development Kit (JDK) 11** atau lebih tinggi
-- **Android SDK** dengan API level 24 atau lebih tinggi
-- **Gradle** (sudah included dengan Android Studio)
-- **Git** (untuk clone repository)
+- [Prasyarat](#prasyarat)
+- [Instalasi](#instalasi)
+- [Menjalankan Aplikasi](#menjalankan-aplikasi)
+- [Proses Build](#proses-build)
+- [Struktur Proyek](#struktur-proyek)
 
-### Langkah-Langkah Menjalankan
+---
 
-1. **Clone repository**
+## Prasyarat
+
+Sebelum memulai, pastikan Anda telah menginstall:
+
+### 1. **Node.js dan npm**
+   - Download dari [https://nodejs.org/](https://nodejs.org/) (versi LTS)
+   - Verifikasi instalasi:
+     ```bash
+     node --version
+     npm --version
+     ```
+
+### 2. **Expo CLI**
+   - Digunakan untuk menjalankan dan build aplikasi
+   - Sudah terinstall di project ini
+
+### 3. **Untuk Android:**
+   - **Android Studio** atau **Android SDK** (API 24+)
+   - **Java Development Kit (JDK) 11** atau lebih baru
+   - Environment variables: `ANDROID_HOME` dan `JAVA_HOME`
+
+### 4. **Untuk iOS (Mac only):**
+   - **Xcode** (versi 12+)
+   - **CocoaPods** (dependency manager untuk iOS)
+   - **Xcode Command Line Tools**
+
+### 5. **Untuk Testing di Device:**
+   - **Expo Go App** (tersedia di Google Play Store dan Apple App Store)
+
+---
+
+## Instalasi
+
+### Step 1: Clone Repository
+```bash
+git clone https://github.com/KenzieRafa/Stringbox-APP.git
+cd APP_STRINGBOXFINAL
+```
+
+### Step 2: Install Dependencies
+```bash
+npm install
+```
+
+Proses ini akan menginstall semua package yang diperlukan termasuk Expo, React Native, dan dependencies lainnya.
+
+### Step 3: Setup Environment (Opsional)
+
+Jika Anda menggunakan file `.env`, buat file `.env.local` atau `.env` di root directory:
+```
+# .env
+API_URL=https://your-api-endpoint.com
+```
+
+---
+
+## Menjalankan Aplikasi
+
+### Option 1: Menjalankan di Expo Go (Paling Mudah)
+
+1. **Start Expo Server:**
    ```bash
-   git clone https://github.com/KenzieRafa/APP-Stringbox.git
-   cd APP-Stringbox
+   npm start
+   ```
+   atau
+   ```bash
+   expo start
    ```
 
-2. **Buka project di Android Studio**
-   - Buka Android Studio
-   - Pilih `File` → `Open`
-   - Navigate ke folder `APP-Stringbox`
-   - Klik `Open`
+2. **Scan QR Code:**
+   - Buka **Expo Go App** di device Anda
+   - Scan QR code yang muncul di terminal
+   - Aplikasi akan load secara otomatis
 
-3. **Build project**
-   - Tunggu Gradle selesai melakukan build (di bawah menu ada proses loading)
-   - Atau tekan `Ctrl + B` untuk build manually
+### Option 2: Menjalankan di Android Emulator
 
-4. **Setup emulator atau device**
-   - Gunakan Android Virtual Device (AVD) Manager untuk membuat emulator
-   - Atau gunakan device fisik dengan USB debugging enabled
+1. **Start Expo Server:**
+   ```bash
+   npm start
+   ```
 
-5. **Run aplikasi**
-   - Klik tombol `Run` (▶) atau tekan `Shift + F10`
-   - Pilih emulator atau device yang ingin Anda gunakan
-   - Tunggu aplikasi selesai install dan running
+2. **Tekan `a` di terminal** untuk membuka Android Emulator
+   - Android Emulator harus sudah berjalan sebelumnya
+   - Atau buka Android Studio → Virtual Device Manager
 
-### Konfigurasi Project
-- **Minimum SDK**: API 24 (Android 7.0)
-- **Target SDK**: API 36 (Android 15)
-- **Compile SDK**: API 36
-- **Kotlin Version**: Latest
+3. **Aplikasi akan auto-load** di emulator
+
+### Option 3: Menjalankan di iOS Simulator (Mac Only)
+
+1. **Start Expo Server:**
+   ```bash
+   npm start
+   ```
+
+2. **Tekan `i` di terminal** untuk membuka iOS Simulator
+   - Xcode harus sudah terinstall
+
+3. **Aplikasi akan auto-load** di simulator
+
+### Option 4: Menjalankan di Device Fisik
+
+1. **Android:**
+   - Pastikan USB Debugging diaktifkan
+   - Hubungkan device via USB
+   - Jalankan: `npm start` → tekan `a`
+
+2. **iOS:**
+   - Tidak memerlukan USB connection
+   - Jalankan: `npm start` → scan QR code dengan camera native iOS
 
 ---
 
-## 📝 Penjelasan Singkat Kode
+## Proses Build
 
-### Struktur Project
+### Mengerti Build Process
+
+Aplikasi Expo/React Native melalui beberapa tahap build:
+
 ```
-APP-Stringbox/
-├── app/
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/example/stringbox_splashscreen/
-│   │   │   │   ├── MainActivity.kt          # Main Activity
-│   │   │   │   └── ui/
-│   │   │   │       └── theme/              # Theme configuration
-│   │   │   ├── AndroidManifest.xml         # App manifest
-│   │   │   └── res/                        # Resources
-│   │   └── androidTest/                    # Unit tests
-│   └── build.gradle.kts                    # App build config
-└── build.gradle.kts                        # Project build config
-```
-
-### MainActivity.kt - File Utama Aplikasi
-
-```kotlin
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        // Thread.sleep(3000) - Menampilkan splash screen selama 3 detik
-        Thread.sleep(3000)
-
-        // installSplashScreen() - Mengaktifkan splash screen API
-        installSplashScreen()
-
-        // enableEdgeToEdge() - Membuat UI mencover seluruh layar
-        enableEdgeToEdge()
-
-        // setContent - Menampilkan UI dengan Jetpack Compose
-        setContent {
-            StringboxsplashscreenTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
-        }
-    }
-}
+Source Code (TS/TSX)
+    ↓
+Babel Transpiler (convert TS → JS)
+    ↓
+Metro Bundler (bundle semua modules)
+    ↓
+Platform-specific bundle (Android/iOS/Web)
+    ↓
+Native Module (bridge ke native code)
+    ↓
+APK (Android) / IPA (iOS)
 ```
 
-#### Penjelasan Komponen:
+### Build untuk Android
 
-1. **Thread.sleep(3000)**
-   - Menampilkan splash screen selama 3 detik (3000 milliseconds)
-   - Splash screen biasanya menampilkan logo atau branding app
+#### Opsi 1: Build APK (Installable File)
 
-2. **installSplashScreen()**
-   - Mengaktifkan Android Splash Screen API
-   - Memberikan pengalaman launching yang lebih smooth
-
-3. **enableEdgeToEdge()**
-   - Membuat konten UI meluas ke edge layar
-   - Meningkatkan penggunaan space layar
-
-4. **setContent()**
-   - Mengganti view hierarchy dengan Jetpack Compose
-   - Semua UI didefinisikan secara deklaratif dengan Compose
-
-5. **Scaffold**
-   - Layout container dari Material Design 3
-   - Menyediakan struktur untuk AppBar, FAB, BottomBar, dll
-
-### Greeting Composable Function
-
-```kotlin
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+```bash
+eas build --platform android --local
 ```
-- Fungsi yang menampilkan text widget sederhana
-- `@Composable` annotation menandakan ini adalah Composable function
-- Bisa di-preview dengan `GreetingPreview()` function
+
+atau menggunakan Expo CLI langsung:
+
+```bash
+expo build:android
+```
+
+**Konfigurasi:**
+- Build ini akan membuat **APK** (Android Package)
+- Signing key akan diminta (jika belum ada)
+- File output: `app-release.apk`
+
+**Instalasi ke Device:**
+```bash
+adb install app-release.apk
+```
+
+#### Opsi 2: Build AAB (untuk Google Play Store)
+
+```bash
+eas build --platform android --local
+```
+
+- Pilih "internal" atau "production" saat prompted
+- Output: `app-release.aab`
+- File ini diupload ke Google Play Console
+
+#### Opsi 3: Debug Build Lokal
+
+```bash
+npm run android
+```
+
+Memerlukan:
+- Android Studio ter-install
+- Android Emulator berjalan
+- `ANDROID_HOME` environment variable ter-setup
+
+### Build untuk iOS
+
+#### Opsi 1: Build IPA (untuk Apple App Store)
+
+```bash
+eas build --platform ios --local
+```
+
+**Konfigurasi:**
+- Apple Developer Account diperlukan
+- Signing certificate akan diminta
+- Output: `app.ipa`
+
+#### Opsi 2: Debug Build ke Simulator
+
+```bash
+npm run ios
+```
+
+Memerlukan:
+- Xcode ter-install
+- iOS Simulator berjalan
+
+#### Opsi 3: Build untuk Device Testing
+
+```bash
+eas build --platform ios --local
+```
+
+- Pilih "internal" untuk device testing
+- Scan QR code dengan device untuk install
+
+### Build untuk Web
+
+```bash
+expo build:web
+```
+
+atau
+
+```bash
+expo export --platform web
+```
+
+Output akan berada di folder `web-build/` atau `dist/`
 
 ---
 
-## 🛠 Dependencies & Libraries
+## Penjelasan Build Process Lebih Detail
 
-| Library | Fungsi |
-|---------|--------|
-| `androidx.core:core-splashscreen:1.0.0` | Splash Screen API |
-| `androidx.activity:activity-compose` | Integration Compose dengan Activity |
-| `androidx.compose.material3` | Material Design 3 Components |
-| `androidx.compose.ui` | Core Compose UI Framework |
-| `androidx.lifecycle:lifecycle-runtime-ktx` | Lifecycle awareness |
-| `androidx.core:core-ktx` | Android KTX extensions |
+### 1. **Transpilation Phase**
+
+Babel mengkonversi TypeScript ke JavaScript yang bisa dipahami oleh runtime:
+
+```
+input:  const value: string = "hello"
+output: const value = "hello"
+```
+
+### 2. **Bundling Phase**
+
+Metro Bundler mengumpulkan semua modules dan dependencies:
+
+```javascript
+// Sebelum bundling
+import { useColorScheme } from '@/hooks/use-color-scheme'
+
+// Setelah bundling - semua inline dalam satu file
+```
+
+### 3. **Platform-Specific Optimization**
+
+Platform-specific files (`.ios.ts`, `.android.ts`, `.web.ts`) dipilih:
+
+```
+Input files:
+  ├─ Component.ts
+  ├─ Component.ios.ts
+  ├─ Component.android.ts
+  └─ Component.web.ts
+
+Android Build Output:
+  └─ Component.android.ts (dipilih)
+
+iOS Build Output:
+  └─ Component.ios.ts (dipilih)
+
+Web Build Output:
+  └─ Component.web.ts (dipilih)
+```
+
+### 4. **Native Compilation**
+
+- **Android:** Gradle mengkompile JavaScript bridge menjadi native code
+- **iOS:** Xcode mengkompile Objective-C/Swift bridge
+
+### 5. **APK/IPA Packaging**
+
+Seluruh bundled code dan assets dikemas ke dalam:
+- **APK** (Android) - signed dengan certificate
+- **IPA** (iOS) - signed dengan Apple certificate
 
 ---
 
-## 📱 Platform & Compatibility
-- **Min SDK**: 24 (Android 7.0 Nougat)
-- **Target SDK**: 36 (Android 15)
-- **Language**: Kotlin
-- **Build System**: Gradle
-- **UI Framework**: Jetpack Compose
+## Struktur Proyek
+
+```
+APP_STRINGBOXFINAL/
+├── hooks/                 # Custom React hooks
+│   ├── use-color-scheme.ts
+│   ├── use-color-scheme.web.ts
+│   └── use-theme-color.ts
+├── app/                   # Main app structure (jika exist)
+├── constants/             # App constants
+├── node_modules/          # Dependencies
+├── .git/                  # Git repository
+├── package.json           # Project metadata & dependencies
+├── app.json              # Expo configuration
+├── tsconfig.json         # TypeScript configuration
+├── babel.config.js       # Babel configuration
+└── README.md             # This file
+```
 
 ---
 
-## 💡 Fitur Aplikasi
+## Troubleshooting
 
-- ✅ Splash Screen dengan durasi 3 detik
-- ✅ Material Design 3 Theme
-- ✅ Edge-to-Edge UI
-- ✅ Jetpack Compose Architecture
-- ✅ Preview composable di Android Studio
+### 1. **Expo Server tidak mau start**
+```bash
+# Clear cache
+expo start --clear
+
+# atau
+npm start -- --clear
+```
+
+### 2. **Module not found error**
+```bash
+# Reinstall dependencies
+rm -rf node_modules
+npm install
+```
+
+### 3. **Android emulator tidak muncul**
+```bash
+# Check emulator availability
+emulator -list-avds
+
+# Jalankan emulator secara manual
+emulator -avd <emulator-name>
+```
+
+### 4. **iOS Simulator error**
+```bash
+# Reset iOS Simulator
+xcrun simctl erase all
+```
+
+### 5. **Build gagal di Android**
+- Pastikan `ANDROID_HOME` ter-setup: `echo $ANDROID_HOME`
+- Update Android SDK: Buka Android Studio → SDK Manager
+- Clear gradle cache: `cd android && ./gradlew clean && cd ..`
+
+### 6. **Build gagal di iOS**
+```bash
+# Clear Xcode cache
+rm -rf ~/Library/Developer/Xcode/DerivedData/*
+
+# Reinstall pods
+cd ios
+pod deintegrate
+pod install
+cd ..
+```
 
 ---
 
-## 📧 Author
-- Kenzie Raffa Ardhana (18223127)
-- Rasyid Rizky S N (18223114)
+## Development
+
+### Setup Development Environment
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+
+# atau dengan Expo CLI langsung
+expo start
+```
+
+### Debugging
+
+1. **Dalam Expo App:**
+   - Shake device → Debug menu
+   - Pilih "Open debugger" atau "Debug remote JS"
+
+2. **Chrome DevTools:**
+   - Buka `http://localhost:19000` di browser
+   - Klik "Debug remote JS"
+
+3. **VSCode Debugger:**
+   - Install "React Native Tools" extension
+   - Setup `.vscode/launch.json` untuk debugging
+
+---
+
+## Deployment
+
+### Deploy ke Google Play Store (Android)
+
+1. Build AAB:
+   ```bash
+   eas build --platform android
+   ```
+
+2. Upload ke Google Play Console:
+   - Create app di [Google Play Console](https://play.google.com/console)
+   - Upload AAB file
+   - Fill app details dan submit untuk review
+
+### Deploy ke Apple App Store (iOS)
+
+1. Build IPA:
+   ```bash
+   eas build --platform ios
+   ```
+
+2. Upload ke App Store:
+   - Create app di [App Store Connect](https://appstoreconnect.apple.com)
+   - Upload IPA menggunakan Transporter
+   - Fill app details dan submit untuk review
+
+---
+
+## Kontribusi
+
+Untuk kontribusi:
+
+1. Fork repository
+2. Create feature branch: `git checkout -b feature/nama-feature`
+3. Commit changes: `git commit -m "Add: deskripsi"`
+4. Push ke branch: `git push origin feature/nama-feature`
+5. Open Pull Request
+
+---
+
+## License
+
+Project ini dilisensikan di bawah MIT License - lihat file LICENSE untuk detail.
+
+---
+
+## Support
+
+Jika ada pertanyaan atau issue:
+
+1. Check [Expo Documentation](https://docs.expo.dev/)
+2. Check [React Native Documentation](https://reactnative.dev/)
+3. Create issue di repository ini
+
+---
+
+**Last Updated:** November 2025
