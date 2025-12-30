@@ -437,12 +437,6 @@ Untuk kontribusi:
 
 ---
 
-## License
-
-Project ini dilisensikan di bawah MIT License - lihat file LICENSE untuk detail.
-
----
-
 ## Support
 
 Jika ada pertanyaan atau issue:
@@ -451,6 +445,3 @@ Jika ada pertanyaan atau issue:
 2. Check [React Native Documentation](https://reactnative.dev/)
 3. Create issue di repository ini
 
----
-
-**Last Updated:** November 2025
