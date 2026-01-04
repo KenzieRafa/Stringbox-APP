@@ -198,35 +198,42 @@ export interface LeaderboardEntry {
  */
 export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
     try {
-        // Fetch all user progress
-        const { data, error } = await supabase
+        // 1. Ambil data Progress (Skor)
+        const { data: progressData, error: progressError } = await supabase
             .from('user_progress')
             .select('*');
 
-        if (error) throw error;
+        if (progressError) throw progressError;
+        if (!progressData) return [];
 
-        if (!data) return [];
+        // 2. Ambil data Profiles (Nama) - Seperti versi Web
+        const { data: profilesData, error: profilesError } = await supabase
+            .from('user_profiles')
+            .select('*');
 
-        // Map and calculate scores
-        const leaderboard = data.map((entry: any) => {
+        if (profilesError) console.log('Warning: Could not fetch profiles', profilesError);
+
+        // 3. Gabungkan (Join) data secara manual
+        const leaderboard = progressData.map((entry: any) => {
+            const profile = profilesData?.find((p: any) => p.user_id === entry.user_id);
+            const name = profile?.display_name || entry.full_name || `User ${entry.user_id.substring(0, 4)}`;
+
             const totalScore = calculateTotalScore(entry.chapter_scores || {});
             const completedModules = entry.completed_modules?.length || 0;
-            // Use 'full_name' if available, otherwise 'User' + ID substring
-            const name = entry.full_name || `User ${entry.user_id.substring(0, 4)}`;
 
             return {
                 id: entry.user_id,
-                name,
+                name, // Nama yang sudah diperbaiki
                 totalScore,
                 completedModules,
-                rank: 0, // Placeholder
+                rank: 0, 
             };
         });
 
-        // Sort by Total Score (Descending)
+        // 4. Urutkan berdasarkan Skor Tertinggi
         leaderboard.sort((a: any, b: any) => b.totalScore - a.totalScore);
 
-        // Assign Ranks
+        // 5. Berikan Ranking
         return leaderboard.map((entry: any, index: number) => ({
             ...entry,
             rank: index + 1

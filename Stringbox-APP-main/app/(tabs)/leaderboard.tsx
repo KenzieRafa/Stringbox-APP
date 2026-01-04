@@ -4,6 +4,7 @@ import { StyleSheet, FlatList, View, SafeAreaView, ActivityIndicator } from 'rea
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Ionicons } from '@expo/vector-icons';
 import { getLeaderboard, LeaderboardEntry } from '@/services/scoreService';
 
 // Stringbox Brand Colors (Consistent with Practice Page)
@@ -39,9 +40,28 @@ export default function LeaderboardScreen() {
     };
 
     const renderRankIcon = (rank: number) => {
-        if (rank === 1) return <View style={styles.rankBadge}><IconSymbol name="trophy.fill" size={24} color={Colors.gold} /></View>;
-        if (rank === 2) return <View style={styles.rankBadge}><IconSymbol name="trophy.fill" size={24} color={Colors.silver} /></View>;
-        if (rank === 3) return <View style={styles.rankBadge}><IconSymbol name="trophy.fill" size={24} color={Colors.bronze} /></View>;
+        if (rank === 1) {
+            return (
+                <View style={styles.rankBadge}>
+                    <Ionicons name="trophy" size={24} color={Colors.gold} />
+                </View>
+            );
+        }
+        if (rank === 2) {
+            return (
+                <View style={styles.rankBadge}>
+                    <Ionicons name="trophy" size={24} color={Colors.silver} />
+                </View>
+            );
+        }
+        if (rank === 3) {
+            return (
+                <View style={styles.rankBadge}>
+                    <Ionicons name="trophy" size={24} color={Colors.bronze} />
+                </View>
+            );
+        }
+        
         return <ThemedText style={styles.rankText}>#{rank}</ThemedText>;
     };
 

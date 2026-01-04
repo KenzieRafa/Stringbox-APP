@@ -59,6 +59,7 @@ export async function signInWithGoogle() {
         const redirectUrl = AuthSession.makeRedirectUri({
             scheme: 'stringbox',
             path: 'auth/callback',
+            preferLocalhost: false,
         });
 
         console.log('🔗 Redirect URL:', redirectUrl);
