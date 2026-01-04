@@ -1,4 +1,4 @@
-import { StyleSheet, Pressable, ScrollView } from 'react-native';
+import { StyleSheet, Pressable, ScrollView, Image } from 'react-native'; // 1. Tambah Image
 import { router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -11,6 +11,14 @@ export default function HomeScreen() {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         {/* Hero Section */}
         <ThemedView style={styles.heroContainer}>
+          
+          {/* 2. LOGO DITAMBAHKAN DI SINI */}
+          <Image 
+            source={require('@/assets/icons/splash-icon-light.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
+
           <MaskedView
             maskElement={
               <ThemedText type="title" style={styles.heroTitle}>
@@ -148,9 +156,17 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     paddingTop: 8,
     backgroundColor: 'transparent',
+    alignItems: 'center', // Agar logo dan teks rata tengah
+  },
+  // 3. STYLE UNTUK LOGO
+  logo: {
+    width: 200,    // Sesuaikan ukuran lebar logo
+    height: 200,   // Sesuaikan ukuran tinggi logo
+    marginBottom: 10, // Jarak antara logo dan judul
   },
   heroTitle: {
-    marginTop: 30,
+    // marginTop: 30, // Hapus atau kurangi marginTop karena sudah ada logo
+    marginTop: 10,
     marginBottom: 20,
     textAlign: 'center',
     fontSize: 32,
@@ -183,6 +199,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
     marginTop: 8,
     flexDirection: 'row',
+    width: '100%', // Pastikan tombol selebar container (dikurangi margin)
   },
   ctaButtonText: {
     color: '#FFFFFF',
