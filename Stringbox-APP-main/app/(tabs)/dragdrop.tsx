@@ -1,10 +1,12 @@
-import React, { useState, useRef } from 'react';
-import { StyleSheet, ScrollView, Pressable, Animated, PanResponder, LayoutAnimation, Platform, UIManager } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, ScrollView, Pressable, LayoutAnimation, Platform, UIManager } from 'react-native'; // Vibration dihapus dari sini
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import { updateDragDropStats } from '@/services/progress';
+import { Ionicons } from '@expo/vector-icons';
 
+// Aktifkan LayoutAnimation untuk Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
@@ -47,103 +49,72 @@ const PROBLEMS: Problem[] = [
     },
 ];
 
-// Draggable Block Component
-function DraggableBlock({ block, onDrop, onDragStart, onDragEnd }: {
-    block: CodeBlock;
-    onDrop: () => void;
-    onDragStart: () => void;
-    onDragEnd: () => void;
+// Komponen Blok Sederhana (Tanpa Getaran)
+function ClickableBlock({ 
+    block, 
+    onPress, 
+    type = 'source' 
+}: { 
+    block: CodeBlock; 
+    onPress: () => void;
+    type?: 'source' | 'target';
 }) {
-    const pan = useRef(new Animated.ValueXY()).current;
-    const scale = useRef(new Animated.Value(1)).current;
-    const [isDragging, setIsDragging] = useState(false);
-
-    const panResponder = useRef(
-        PanResponder.create({
-            onStartShouldSetPanResponder: () => true,
-            onMoveShouldSetPanResponder: () => true,
-            onPanResponderGrant: () => {
-                setIsDragging(true);
-                onDragStart();
-                Animated.spring(scale, {
-                    toValue: 1.1,
-                    useNativeDriver: true,
-                }).start();
-            },
-            onPanResponderMove: Animated.event(
-                [null, { dx: pan.x, dy: pan.y }],
-                { useNativeDriver: false }
-            ),
-            onPanResponderRelease: () => {
-                setIsDragging(false);
-                onDragEnd();
-
-                // Animate back to original position with slower timing
-                Animated.parallel([
-                    Animated.spring(pan, {
-                        toValue: { x: 0, y: 0 },
-                        friction: 7,
-                        tension: 40,
-                        useNativeDriver: true,
-                    }),
-                    Animated.spring(scale, {
-                        toValue: 1,
-                        friction: 7,
-                        useNativeDriver: true,
-                    }),
-                ]).start(() => {
-                    // Delay before moving to show the return animation clearly
-                    setTimeout(() => {
-                        onDrop();
-                    }, 200);
-                });
-            },
-        })
-    ).current;
-
     return (
-        <Animated.View
-            {...panResponder.panHandlers}
-            style={[
-                styles.draggableWrapper,
-                {
-                    transform: [
-                        { translateX: pan.x },
-                        { translateY: pan.y },
-                        { scale },
-                    ],
-                    opacity: isDragging ? 0.7 : 1,
-                    zIndex: isDragging ? 1000 : 1,
-                },
+        <Pressable
+            onPress={onPress} // Langsung panggil onPress tanpa Vibration
+            style={({ pressed }) => [
+                styles.blockContainer,
+                type === 'target' ? styles.blockTarget : styles.blockSource,
+                pressed && styles.blockPressed
             ]}
         >
-            <ThemedView style={styles.codeBlock}>
+            <ThemedView style={styles.blockContent}>
                 <ThemedText style={styles.codeText}>{block.code}</ThemedText>
-                <ThemedText style={styles.dragHint}>Tekan dan geser</ThemedText>
+                
+                {/* Indikator Visual */}
+                <Ionicons 
+                    name={type === 'source' ? "add-circle-outline" : "close-circle-outline"} 
+                    size={20} 
+                    color={type === 'source' ? "#9333EA" : "#EF4444"} 
+                    style={styles.actionIcon}
+                />
             </ThemedView>
-        </Animated.View>
+        </Pressable>
     );
 }
 
 export default function DragDropScreen() {
     const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
-    const [availableBlocks, setAvailableBlocks] = useState<CodeBlock[]>(() =>
-        [...PROBLEMS[0].blocks].sort(() => Math.random() - 0.5)
-    );
+    // Init state
+    const [availableBlocks, setAvailableBlocks] = useState<CodeBlock[]>([]);
     const [solutionBlocks, setSolutionBlocks] = useState<CodeBlock[]>([]);
     const [feedback, setFeedback] = useState({ show: false, correct: false, message: '' });
-    const [isDropZoneActive, setIsDropZoneActive] = useState(false);
+
+    // Load problem saat index berubah
+    useEffect(() => {
+        loadProblem(currentProblemIndex);
+    }, [currentProblemIndex]);
+
+    const loadProblem = (index: number) => {
+        const problem = PROBLEMS[index];
+        // Randomize urutan awal
+        setAvailableBlocks([...problem.blocks].sort(() => Math.random() - 0.5));
+        setSolutionBlocks([]);
+        setFeedback({ show: false, correct: false, message: '' });
+    };
 
     const currentProblem = PROBLEMS[currentProblemIndex];
 
-    const moveToSolution = (block: CodeBlock) => {
+    // Pindah dari Available -> Solution (Teleport ke bawah)
+    const handleAddToSolution = (block: CodeBlock) => {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setAvailableBlocks(prev => prev.filter(b => b.id !== block.id));
         setSolutionBlocks(prev => [...prev, block]);
         setFeedback({ show: false, correct: false, message: '' });
     };
 
-    const moveToAvailable = (block: CodeBlock) => {
+    // Pindah dari Solution -> Available (Kembali ke atas)
+    const handleRemoveFromSolution = (block: CodeBlock) => {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setSolutionBlocks(prev => prev.filter(b => b.id !== block.id));
         setAvailableBlocks(prev => [...prev, block]);
@@ -152,11 +123,13 @@ export default function DragDropScreen() {
 
     const resetExercise = () => {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        // Random soal baru atau reset soal yang sama
         const newIndex = Math.floor(Math.random() * PROBLEMS.length);
         setCurrentProblemIndex(newIndex);
-        setAvailableBlocks([...PROBLEMS[newIndex].blocks].sort(() => Math.random() - 0.5));
-        setSolutionBlocks([]);
-        setFeedback({ show: false, correct: false, message: '' });
+        // Jika index sama, force reload manual karena useEffect dependensi index
+        if (newIndex === currentProblemIndex) {
+            loadProblem(newIndex);
+        }
     };
 
     const checkSolution = async () => {
@@ -164,7 +137,7 @@ export default function DragDropScreen() {
             setFeedback({
                 show: true,
                 correct: false,
-                message: '❌ Belum ada kode! Drag blok ke area solusi.',
+                message: '❌ Belum ada kode! Tekan blok di atas untuk menyusun jawaban.',
             });
             return;
         }
@@ -185,19 +158,15 @@ export default function DragDropScreen() {
             setFeedback({
                 show: true,
                 correct: true,
-                message: '🎉 Sempurna! Urutan kode sudah benar! Progress tersimpan di Academic Progress.',
+                message: '🎉 Sempurna! Urutan kode sudah benar! Progress tersimpan.',
             });
-
-            // Save stats to Supabase
             await updateDragDropStats(true);
         } else {
             setFeedback({
                 show: true,
                 correct: false,
-                message: `❌ Belum tepat. Hint: ${currentProblem.hint}`,
+                message: `❌ Masih salah urutan. Hint: ${currentProblem.hint}`,
             });
-
-            // Save stats to Supabase
             await updateDragDropStats(false);
         }
     };
@@ -206,7 +175,7 @@ export default function DragDropScreen() {
         <ThemedView style={styles.container}>
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
                 <ThemedText type="title" style={styles.pageTitle}>
-                    Latihan Drag & Drop
+                    Susun Kode
                 </ThemedText>
 
                 <ThemedText type="subtitle" style={styles.problemTitle}>
@@ -215,58 +184,60 @@ export default function DragDropScreen() {
 
                 <ThemedView style={styles.intro}>
                     <ThemedText style={styles.introText}>
-                        Susun blok kode berikut menjadi program yang benar dengan cara drag & drop!
+                        Tekan blok kode untuk memindahkannya ke area jawaban. Susun dari atas ke bawah.
                     </ThemedText>
                 </ThemedView>
 
-                {/* Available Blocks */}
-                <ThemedView style={styles.availableBlocksWrapper}>
-                    <ThemedText style={styles.sectionTitle}>Blok Kode Tersedia</ThemedText>
-                    <ThemedView style={styles.blocksContainer}>
-                        {availableBlocks.map((block) => (
-                            <DraggableBlock
-                                key={block.id}
-                                block={block}
-                                onDrop={() => moveToSolution(block)}
-                                onDragStart={() => setIsDropZoneActive(true)}
-                                onDragEnd={() => setIsDropZoneActive(false)}
-                            />
-                        ))}
-                        {availableBlocks.length === 0 && (
-                            <ThemedText style={styles.emptyMessage}>
-                                Semua blok sudah dipindahkan
-                            </ThemedText>
-                        )}
-                    </ThemedView>
-                </ThemedView>
-
-                {/* Solution Area */}
-                <ThemedView style={styles.section}>
-                    <ThemedText style={styles.sectionTitle}>Area Solusi</ThemedText>
-                    <ThemedView style={[styles.dropZone, isDropZoneActive && styles.dropZoneActive]}>
-                        {solutionBlocks.length === 0 ? (
-                            <ThemedText style={styles.emptyMessage}>
-                                Drag blok kode ke sini untuk menyusun program
-                            </ThemedText>
+                {/* 1. AREA SUMBER (AVAILABLE) */}
+                <ThemedView style={styles.sectionContainer}>
+                    <ThemedText style={styles.sectionTitle}>Pilihan Kode</ThemedText>
+                    <ThemedView style={styles.poolContainer}>
+                        {availableBlocks.length === 0 ? (
+                            <ThemedText style={styles.emptyText}>Semua blok telah dipilih</ThemedText>
                         ) : (
-                            solutionBlocks.map((block) => (
-                                <Pressable
+                            availableBlocks.map((block) => (
+                                <ClickableBlock
                                     key={block.id}
-                                    style={({ pressed }) => [
-                                        styles.codeBlockInSolution,
-                                        pressed && styles.blockPressed
-                                    ]}
-                                    onPress={() => moveToAvailable(block)}
-                                >
-                                    <ThemedText style={styles.codeText}>{block.code}</ThemedText>
-                                    <ThemedText style={styles.removeHint}>Tap untuk hapus</ThemedText>
-                                </Pressable>
+                                    block={block}
+                                    type="source"
+                                    onPress={() => handleAddToSolution(block)}
+                                />
                             ))
                         )}
                     </ThemedView>
                 </ThemedView>
 
-                {/* Controls */}
+                {/* PANAH VISUAL */}
+                <ThemedView style={styles.arrowContainer}>
+                    <Ionicons name="arrow-down-circle" size={32} color="#6B7280" />
+                </ThemedView>
+
+                {/* 2. AREA JAWABAN (SOLUTION) */}
+                <ThemedView style={styles.sectionContainer}>
+                    <ThemedText style={styles.sectionTitle}>Jawaban Anda</ThemedText>
+                    <ThemedView style={[styles.solutionContainer, solutionBlocks.length > 0 && styles.solutionActive]}>
+                        {solutionBlocks.length === 0 ? (
+                            <ThemedView style={styles.emptyPlaceholder}>
+                                <Ionicons name="code-slash-outline" size={48} color="#4B5563" />
+                                <ThemedText style={styles.emptyText}>Tap blok di atas untuk mengisi ini</ThemedText>
+                            </ThemedView>
+                        ) : (
+                            solutionBlocks.map((block, index) => (
+                                <ThemedView key={block.id} style={styles.numberedBlockWrapper}>
+                                    {/* Nomor Baris */}
+                                    <ThemedText style={styles.lineNumber}>{index + 1}</ThemedText>
+                                    <ClickableBlock
+                                        block={block}
+                                        type="target"
+                                        onPress={() => handleRemoveFromSolution(block)}
+                                    />
+                                </ThemedView>
+                            ))
+                        )}
+                    </ThemedView>
+                </ThemedView>
+
+                {/* CONTROLS */}
                 <ThemedView style={styles.controls}>
                     <Pressable
                         onPress={checkSolution}
@@ -290,7 +261,7 @@ export default function DragDropScreen() {
                     </Pressable>
                 </ThemedView>
 
-                {/* Feedback */}
+                {/* FEEDBACK */}
                 {feedback.show && (
                     <ThemedView style={[styles.feedback, feedback.correct ? styles.feedbackCorrect : styles.feedbackIncorrect]}>
                         <ThemedText style={feedback.correct ? styles.feedbackTextCorrect : styles.feedbackTextIncorrect}>
@@ -318,18 +289,19 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         textAlign: 'center',
-        marginBottom: 12,
+        marginBottom: 8,
         color: '#FFFFFF',
-        fontSize: 28,
+        fontSize: 24,
+        fontWeight: 'bold',
     },
     problemTitle: {
         textAlign: 'center',
         marginBottom: 20,
         color: '#C084FC',
-        fontSize: 18,
+        fontSize: 16,
     },
     intro: {
-        padding: 16,
+        padding: 12,
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         borderLeftWidth: 4,
         borderLeftColor: '#9333EA',
@@ -337,107 +309,117 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     introText: {
-        color: '#FFFFFF',
-        lineHeight: 22,
+        color: '#E5E7EB',
         fontSize: 14,
+        lineHeight: 20,
     },
-    section: {
-        marginBottom: 24,
-        backgroundColor: 'transparent',
-    },
-    availableBlocksWrapper: {
-        marginBottom: 24,
-        padding: 20,
-        borderWidth: 2,
-        borderStyle: 'dashed',
-        borderColor: '#6B7280',
-        borderRadius: 12,
-        backgroundColor: '#1e1b4b',
+    sectionContainer: {
+        marginBottom: 10,
     },
     sectionTitle: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '700',
-        marginBottom: 12,
-        color: '#9333EA',
+        marginBottom: 8,
+        color: '#9CA3AF',
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
-    blocksContainer: {
-        backgroundColor: 'transparent',
-    },
-    draggableWrapper: {
-        marginBottom: 12,
-    },
-    codeBlock: {
-        backgroundColor: '#2D1B4E',
-        borderWidth: 2,
+    poolContainer: {
+        backgroundColor: '#1e1b4b', // Darker bg for source
+        borderRadius: 12,
+        padding: 12,
+        borderWidth: 1,
         borderColor: '#4B5563',
+        minHeight: 100,
+        gap: 10,
+    },
+    solutionContainer: {
+        backgroundColor: '#111827', // Very dark for code editor look
+        borderRadius: 12,
+        padding: 12,
+        borderWidth: 2,
+        borderStyle: 'dashed',
+        borderColor: '#4B5563',
+        minHeight: 150,
+        gap: 10,
+    },
+    solutionActive: {
+        borderStyle: 'solid',
+        borderColor: '#9333EA',
+        backgroundColor: 'rgba(147, 51, 234, 0.05)',
+    },
+    arrowContainer: {
+        alignItems: 'center',
+        marginVertical: 10,
+        opacity: 0.5,
+    },
+    // BLOCK STYLES
+    blockContainer: {
         borderRadius: 8,
-        padding: 16,
-        alignItems: 'flex-start',
-        flexDirection: 'column',
+        overflow: 'hidden',
+        borderWidth: 1,
+    },
+    blockSource: {
+        backgroundColor: '#2D1B4E',
+        borderColor: '#6B7280',
+    },
+    blockTarget: {
+        backgroundColor: '#1F2937',
+        borderColor: '#9333EA',
+        flex: 1, // Agar mengambil sisa space di sebelah nomor baris
     },
     blockPressed: {
-        opacity: 0.6,
+        opacity: 0.7,
         transform: [{ scale: 0.98 }],
     },
-    codeBlockInSolution: {
-        backgroundColor: '#16213E',
-        borderWidth: 2,
-        borderColor: '#9333EA',
-        borderRadius: 8,
-        padding: 16,
-        marginBottom: 12,
-        alignItems: 'flex-start',
+    blockContent: {
+        padding: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: 'transparent',
     },
     codeText: {
         fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
         fontSize: 13,
         color: '#FFFFFF',
-        textAlign: 'left',
-        width: '100%',
-        flexShrink: 1,
+        flexShrink: 1, 
+        flexWrap: 'wrap',
     },
-    removeHint: {
-        fontSize: 11,
-        color: '#999',
-        marginTop: 8,
-        fontStyle: 'italic',
+    actionIcon: {
+        marginLeft: 10,
     },
-    dragHint: {
-        fontSize: 11,
-        color: '#9333EA',
-        marginTop: 8,
-        fontStyle: 'italic',
-    },
-    dropZone: {
-        minHeight: 300,
-        borderWidth: 2,
-        borderStyle: 'dashed',
-        borderColor: '#6B7280',
-        borderRadius: 12,
-        padding: 20,
-        backgroundColor: '#1e1b4b',
-        justifyContent: 'center',
+    // LIST NUMBERING
+    numberedBlockWrapper: {
+        flexDirection: 'row',
         alignItems: 'center',
+        gap: 10,
     },
-    dropZoneActive: {
-        borderColor: '#9333EA',
-        borderStyle: 'solid',
-        backgroundColor: 'rgba(147, 51, 234, 0.15)',
-        borderWidth: 3,
+    lineNumber: {
+        color: '#6B7280',
+        fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+        fontSize: 12,
+        width: 20,
+        textAlign: 'right',
     },
-    emptyMessage: {
-        textAlign: 'center',
+    // EMPTY STATES
+    emptyText: {
         color: '#6B7280',
         fontStyle: 'italic',
-        paddingVertical: 60,
-        fontSize: 15,
-        lineHeight: 24,
+        fontSize: 14,
+        textAlign: 'center',
+        marginTop: 8,
     },
+    emptyPlaceholder: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 40,
+    },
+    // CONTROLS & FEEDBACK
     controls: {
+        marginTop: 20,
         flexDirection: 'row',
         gap: 12,
-        marginBottom: 20,
-        backgroundColor: 'transparent',
     },
     checkBtn: {
         flex: 2,
@@ -455,7 +437,7 @@ const styles = StyleSheet.create({
     },
     resetBtn: {
         flex: 1,
-        backgroundColor: '#2D1B4E',
+        backgroundColor: '#1F2937',
         paddingVertical: 16,
         paddingHorizontal: 24,
         borderRadius: 12,
@@ -472,34 +454,31 @@ const styles = StyleSheet.create({
         opacity: 0.7,
     },
     feedback: {
-        padding: 20,
+        marginTop: 20,
+        padding: 16,
         borderRadius: 12,
-        marginBottom: 20,
     },
     feedbackCorrect: {
-        backgroundColor: 'rgba(34, 197, 94, 0.2)',
-        borderWidth: 2,
+        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        borderWidth: 1,
         borderColor: '#22c55e',
     },
     feedbackIncorrect: {
-        backgroundColor: 'rgba(239, 68, 68, 0.2)',
-        borderWidth: 2,
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        borderWidth: 1,
         borderColor: '#ef4444',
     },
     feedbackTextCorrect: {
         color: '#86efac',
-        fontSize: 16,
-        fontWeight: '600',
         textAlign: 'center',
+        fontWeight: '600',
     },
     feedbackTextIncorrect: {
         color: '#fca5a5',
-        fontSize: 16,
-        fontWeight: '600',
         textAlign: 'center',
+        fontWeight: '600',
     },
     bottomSpacer: {
-        height: 40,
-        backgroundColor: 'transparent',
+        height: 50,
     },
 });
