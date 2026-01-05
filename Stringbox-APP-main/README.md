@@ -1,6 +1,22 @@
-# StringBox App
+# StringBox App - Python Virtual Lab
 
-StringBox adalah aplikasi mobile cross-platform yang dibangun dengan Expo dan React Native. Aplikasi ini mendukung iOS, Android, dan Web.
+<div align="center">
+
+   <div>
+      <img src="https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5" />
+      <img src="https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3" />
+      <img src="https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E" alt="JavaScript" />
+   </div>
+
+   <br>
+   <img src="Stringbox-APP-main/assets/icons/splash-icon-light.png" style="width:70%" alt="Stringbox" />
+   <br>
+
+**Aplikasi pembelajaran interaktif pemrograman Python untuk mahasiswa TPB Institut Teknologi Bandung**
+
+[🌐 Live Demo](http://virtual-lab-five.vercel.app) | [📖 Documentation](https://github.com/KenzieRafa/Virtual-Lab.git) | [🐛 Report Bug](https://github.com/KenzieRafa/Virtual-Lab/issues)
+
+</div>
 
 ## Daftar Isi
 
