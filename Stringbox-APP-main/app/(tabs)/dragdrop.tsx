@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, Pressable, LayoutAnimation, Platform, UIManager } from 'react-native'; // Vibration dihapus dari sini
+import { StyleSheet, ScrollView, Pressable, LayoutAnimation, Platform, UIManager, View } from 'react-native'; // Tambahkan View
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import { updateDragDropStats } from '@/services/progress';
 import { Ionicons } from '@expo/vector-icons';
 
-// Aktifkan LayoutAnimation untuk Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
@@ -49,7 +48,6 @@ const PROBLEMS: Problem[] = [
     },
 ];
 
-// Komponen Blok Sederhana (Tanpa Getaran)
 function ClickableBlock({ 
     block, 
     onPress, 
@@ -61,43 +59,39 @@ function ClickableBlock({
 }) {
     return (
         <Pressable
-            onPress={onPress} // Langsung panggil onPress tanpa Vibration
+            onPress={onPress}
             style={({ pressed }) => [
                 styles.blockContainer,
                 type === 'target' ? styles.blockTarget : styles.blockSource,
                 pressed && styles.blockPressed
             ]}
         >
-            <ThemedView style={styles.blockContent}>
+            <View style={styles.blockContent}>
                 <ThemedText style={styles.codeText}>{block.code}</ThemedText>
                 
-                {/* Indikator Visual */}
                 <Ionicons 
                     name={type === 'source' ? "add-circle-outline" : "close-circle-outline"} 
                     size={20} 
                     color={type === 'source' ? "#9333EA" : "#EF4444"} 
                     style={styles.actionIcon}
                 />
-            </ThemedView>
+            </View>
         </Pressable>
     );
 }
 
 export default function DragDropScreen() {
     const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
-    // Init state
     const [availableBlocks, setAvailableBlocks] = useState<CodeBlock[]>([]);
     const [solutionBlocks, setSolutionBlocks] = useState<CodeBlock[]>([]);
     const [feedback, setFeedback] = useState({ show: false, correct: false, message: '' });
 
-    // Load problem saat index berubah
     useEffect(() => {
         loadProblem(currentProblemIndex);
     }, [currentProblemIndex]);
 
     const loadProblem = (index: number) => {
         const problem = PROBLEMS[index];
-        // Randomize urutan awal
         setAvailableBlocks([...problem.blocks].sort(() => Math.random() - 0.5));
         setSolutionBlocks([]);
         setFeedback({ show: false, correct: false, message: '' });
@@ -105,7 +99,6 @@ export default function DragDropScreen() {
 
     const currentProblem = PROBLEMS[currentProblemIndex];
 
-    // Pindah dari Available -> Solution (Teleport ke bawah)
     const handleAddToSolution = (block: CodeBlock) => {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setAvailableBlocks(prev => prev.filter(b => b.id !== block.id));
@@ -113,7 +106,6 @@ export default function DragDropScreen() {
         setFeedback({ show: false, correct: false, message: '' });
     };
 
-    // Pindah dari Solution -> Available (Kembali ke atas)
     const handleRemoveFromSolution = (block: CodeBlock) => {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setSolutionBlocks(prev => prev.filter(b => b.id !== block.id));
@@ -123,10 +115,8 @@ export default function DragDropScreen() {
 
     const resetExercise = () => {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        // Random soal baru atau reset soal yang sama
         const newIndex = Math.floor(Math.random() * PROBLEMS.length);
         setCurrentProblemIndex(newIndex);
-        // Jika index sama, force reload manual karena useEffect dependensi index
         if (newIndex === currentProblemIndex) {
             loadProblem(newIndex);
         }
@@ -172,26 +162,26 @@ export default function DragDropScreen() {
     };
 
     return (
-        <ThemedView style={styles.container}>
+        <View style={styles.container}>
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
                 <ThemedText type="title" style={styles.pageTitle}>
-                    Susun Kode
+                    Latihan Drag & Drop
                 </ThemedText>
 
                 <ThemedText type="subtitle" style={styles.problemTitle}>
                     {currentProblem.title}
                 </ThemedText>
 
-                <ThemedView style={styles.intro}>
+                <View style={styles.intro}>
                     <ThemedText style={styles.introText}>
                         Tekan blok kode untuk memindahkannya ke area jawaban. Susun dari atas ke bawah.
                     </ThemedText>
-                </ThemedView>
+                </View>
 
                 {/* 1. AREA SUMBER (AVAILABLE) */}
-                <ThemedView style={styles.sectionContainer}>
+                <View style={styles.sectionContainer}>
                     <ThemedText style={styles.sectionTitle}>Pilihan Kode</ThemedText>
-                    <ThemedView style={styles.poolContainer}>
+                    <View style={styles.poolContainer}>
                         {availableBlocks.length === 0 ? (
                             <ThemedText style={styles.emptyText}>Semua blok telah dipilih</ThemedText>
                         ) : (
@@ -204,41 +194,40 @@ export default function DragDropScreen() {
                                 />
                             ))
                         )}
-                    </ThemedView>
-                </ThemedView>
+                    </View>
+                </View>
 
                 {/* PANAH VISUAL */}
-                <ThemedView style={styles.arrowContainer}>
+                <View style={styles.arrowContainer}>
                     <Ionicons name="arrow-down-circle" size={32} color="#6B7280" />
-                </ThemedView>
+                </View>
 
                 {/* 2. AREA JAWABAN (SOLUTION) */}
-                <ThemedView style={styles.sectionContainer}>
+                <View style={styles.sectionContainer}>
                     <ThemedText style={styles.sectionTitle}>Jawaban Anda</ThemedText>
-                    <ThemedView style={[styles.solutionContainer, solutionBlocks.length > 0 && styles.solutionActive]}>
+                    <View style={[styles.solutionContainer, solutionBlocks.length > 0 && styles.solutionActive]}>
                         {solutionBlocks.length === 0 ? (
-                            <ThemedView style={styles.emptyPlaceholder}>
+                            <View style={styles.emptyPlaceholder}>
                                 <Ionicons name="code-slash-outline" size={48} color="#4B5563" />
                                 <ThemedText style={styles.emptyText}>Tap blok di atas untuk mengisi ini</ThemedText>
-                            </ThemedView>
+                            </View>
                         ) : (
                             solutionBlocks.map((block, index) => (
-                                <ThemedView key={block.id} style={styles.numberedBlockWrapper}>
-                                    {/* Nomor Baris */}
+                                <View key={block.id} style={styles.numberedBlockWrapper}>
                                     <ThemedText style={styles.lineNumber}>{index + 1}</ThemedText>
                                     <ClickableBlock
                                         block={block}
                                         type="target"
                                         onPress={() => handleRemoveFromSolution(block)}
                                     />
-                                </ThemedView>
+                                </View>
                             ))
                         )}
-                    </ThemedView>
-                </ThemedView>
+                    </View>
+                </View>
 
                 {/* CONTROLS */}
-                <ThemedView style={styles.controls}>
+                <View style={styles.controls}>
                     <Pressable
                         onPress={checkSolution}
                         style={({ pressed }) => [styles.checkBtn, pressed && styles.btnPressed]}
@@ -259,27 +248,27 @@ export default function DragDropScreen() {
                     >
                         <ThemedText style={styles.resetBtnText}>Reset</ThemedText>
                     </Pressable>
-                </ThemedView>
+                </View>
 
                 {/* FEEDBACK */}
                 {feedback.show && (
-                    <ThemedView style={[styles.feedback, feedback.correct ? styles.feedbackCorrect : styles.feedbackIncorrect]}>
+                    <View style={[styles.feedback, feedback.correct ? styles.feedbackCorrect : styles.feedbackIncorrect]}>
                         <ThemedText style={feedback.correct ? styles.feedbackTextCorrect : styles.feedbackTextIncorrect}>
                             {feedback.message}
                         </ThemedText>
-                    </ThemedView>
+                    </View>
                 )}
 
-                <ThemedView style={styles.bottomSpacer} />
+                <View style={styles.bottomSpacer} />
             </ScrollView>
-        </ThemedView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a0b2e',
+        backgroundColor: '#1a0b2e', // Background Ungu Gelap (Master Color)
     },
     scrollView: {
         flex: 1,
@@ -366,7 +355,7 @@ const styles = StyleSheet.create({
     blockTarget: {
         backgroundColor: '#1F2937',
         borderColor: '#9333EA',
-        flex: 1, // Agar mengambil sisa space di sebelah nomor baris
+        flex: 1, 
     },
     blockPressed: {
         opacity: 0.7,

@@ -117,7 +117,7 @@ export default function LeaderboardScreen() {
             <View style={styles.container}>
                 {/* Header */}
                 <ThemedView style={styles.header}>
-                    <ThemedText style={styles.headerTitle}>Papan Peringkat</ThemedText>
+                    <ThemedText style={styles.headerTitle}>Leaderboard</ThemedText>
                     <ThemedText style={styles.headerSubtitle}>Siswa Terbaik Stringbox</ThemedText>
                 </ThemedView>
 

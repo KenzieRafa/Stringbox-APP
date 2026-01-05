@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import React, { useState, useEffect } from 'react';
-import { View } from 'react-native'; // Hapus TouchableOpacity dan Text yang tidak dipakai
+import { View } from 'react-native';
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Ionicons } from '@expo/vector-icons';
@@ -49,22 +49,19 @@ export default function TabLayout() {
           tabBarInactiveTintColor: THEME.textSecondary,
           headerShown: false,
           tabBarButton: HapticTab,
-          // PENGATURAN NAVBAR STANDAR (DOCKED)
           tabBarStyle: {
             backgroundColor: THEME.primaryDark,
             borderTopColor: THEME.borderColor,
             borderTopWidth: 1,
-            height: 75, // Tinggi standar yang cukup untuk icon + text
-            paddingBottom: 12, // Memberi jarak dari bawah (penting untuk HP layar poni)
+            height: 75,
+            paddingBottom: 12,
             paddingTop: 8,
           },
-          // Font diperkecil agar 7 item muat dalam satu baris
           tabBarLabelStyle: {
             fontSize: 9, 
             fontWeight: '600',
             marginTop: 2,
           },
-          // Ukuran area klik icon
           tabBarItemStyle: {
             justifyContent: 'center',
             alignItems: 'center',
@@ -98,7 +95,7 @@ export default function TabLayout() {
           }}
         />
 
-        {/* 4. LEADERBOARD (KEMBALI NORMAL) */}
+        {/* 4. LEADERBOARD */}
         <Tabs.Screen
           name="leaderboard"
           options={{
@@ -111,7 +108,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="dragdrop"
           options={{
-            title: 'Drag&Drop',
+            title: 'D&D',
             tabBarIcon: ({ color }) => <IconSymbol size={24} name="hand.draw.fill" color={color} />,
           }}
         />
@@ -134,7 +131,6 @@ export default function TabLayout() {
           }}
         />
 
-        {/* EXPLORE (Hidden) */}
         <Tabs.Screen
           name="explore"
           options={{
