@@ -196,8 +196,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 30,
-    marginTop: 8,
     flexDirection: 'row',
     width: '100%', // Pastikan tombol selebar container (dikurangi margin)
   },
@@ -205,9 +203,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
     textAlign: 'center',
     flexShrink: 0,
+    width: '100%',
   },
   featureRow: {
     flexDirection: 'row',
